@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class AnagramDictionary {
 
@@ -31,17 +34,28 @@ public class AnagramDictionary {
     private static final int MAX_WORD_LENGTH = 7;
     private Random random = new Random();
     private List<String> wordList = new ArrayList<String>();
+    private Set<String> wordSet = new HashSet<String>();
+    private Map<String, List<String>> lettersToWord = new HashMap<String, List<String>>();
 
     public AnagramDictionary(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
         String line;
-        while((line = in.readLine()) != null) {
+        while ((line = in.readLine()) != null) {
             String word = line.trim();
             wordList.add(word);
+            wordSet.add(word);
+            String sortedWord = sortLetters(word);
+            if (lettersToWord.containsKey(sortedWord)) {
+                lettersToWord.get(sortedWord).add(word);
+            } else {
+                List<String> anagramList = new ArrayList<String>();
+                anagramList.add(word);
+                lettersToWord.put(sortedWord, anagramList);
+            }
         }
     }
 
-    public String sortLetters(String inputWord){
+    public String sortLetters(String inputWord) {
         //create a character array
         char tempArray[] = inputWord.toCharArray();
         //sort tempArray
@@ -55,14 +69,10 @@ public class AnagramDictionary {
     }
 
     public List<String> getAnagrams(String targetWord) {
-        ArrayList<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<String>();
         String sortedTargetWord = sortLetters(targetWord);
-        Iterator<String> iterator = wordList.iterator();
-        while(iterator.hasNext()){
-            String currentWord = iterator.next();
-            if (sortedTargetWord.length() == currentWord.length() && sortedTargetWord.equals(sortLetters(currentWord))){
-                result.add(currentWord);
-            }
+        if (lettersToWord.containsKey(sortedTargetWord)) {
+            result.addAll(lettersToWord.get(sortedTargetWord));
         }
         return result;
     }
